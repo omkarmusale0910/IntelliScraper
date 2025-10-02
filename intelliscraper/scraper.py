@@ -94,13 +94,13 @@ class Scraper:
                 wait_until="networkidle",
                 timeout=timeout.total_seconds() * 1000,
             )
-            return HTMLParser(html=page.content())
+            return HTMLParser(base_url=url, html=page.content())
         except TimeoutError:
             logging.warning(
                 f"Timeout while loading URL: {url}. "
                 f"Waited {timeout.total_seconds()} seconds. Returning partial content."
             )
-            return HTMLParser(html=page.content())
+            return HTMLParser(base_url=url, html=page.content())
         except Exception as e:
             logging.error(f"Failed to scrape data for URL: {url}. Error: {e}")
             raise ScrapError(f"Scraping failed for URL: {url}") from e

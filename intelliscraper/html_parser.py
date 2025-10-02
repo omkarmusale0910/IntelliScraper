@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 
 from intelliscraper.enums import HTMLParserType
 from intelliscraper.exception import HTMLParserInputError
+from intelliscraper.utils import normalize_links
 
 
 class HTMLParser:
@@ -18,7 +19,10 @@ class HTMLParser:
     """
 
     def __init__(
-        self, html: str, html_parser: HTMLParserType = HTMLParserType.HTML5LIB
+        self,
+        base_url: str,
+        html: str,
+        html_parser: HTMLParserType = HTMLParserType.HTML5LIB,
     ):
         """
         Initialize the HTMLParser with raw HTML content.
@@ -27,6 +31,7 @@ class HTMLParser:
             html (str): The HTML content to parse.
             html_parser (HTMLParserType): The parser to use (default: "html5lib").
         """
+        self.base_url = base_url
         if not (html and isinstance(html, str)):
             raise HTMLParserInputError(
                 "HTMLParser expects a non-empty string as HTML input."
@@ -53,5 +58,5 @@ class HTMLParser:
         Returns:
             list[str]: List of all 'href' attributes found in <a> tags.
         """
-        print("Calculating links...")
-        return [a.get("href") for a in self.soup.find_all("a") if a.get("href")]
+        all_links = [a.get("href") for a in self.soup.find_all("a") if a.get("href")]
+        return normalize_links(base_url=self.base_url, links=all_links)
