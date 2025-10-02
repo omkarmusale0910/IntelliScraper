@@ -4,6 +4,7 @@ from datetime import timedelta
 from playwright.sync_api import TimeoutError, sync_playwright
 
 from intelliscraper.exception import ScrapError
+from intelliscraper.html_parser import HTMLParser
 
 
 class Scraper:
@@ -72,7 +73,7 @@ class Scraper:
 
         return self.page
 
-    def scrap(self, url: str, timeout: timedelta = timedelta(seconds=30)):
+    def scrap(self, url: str, timeout: timedelta = timedelta(seconds=30)) -> HTMLParser:
         """Navigate to the given URL and return the page content.
 
         Args:
@@ -93,13 +94,13 @@ class Scraper:
                 wait_until="networkidle",
                 timeout=timeout.total_seconds() * 1000,
             )
-            return page.content()
+            return HTMLParser(html=page.content())
         except TimeoutError:
             logging.warning(
                 f"Timeout while loading URL: {url}. "
                 f"Waited {timeout.total_seconds()} seconds. Returning partial content."
             )
-            return page.content()
+            return HTMLParser(html=page.content())
         except Exception as e:
             logging.error(f"Failed to scrape data for URL: {url}. Error: {e}")
             raise ScrapError(f"Scraping failed for URL: {url}") from e
