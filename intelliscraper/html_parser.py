@@ -1,6 +1,7 @@
 from functools import cached_property
 
 from bs4 import BeautifulSoup
+from html_to_markdown import convert_to_markdown
 
 from intelliscraper.enums import HTMLParserType
 from intelliscraper.exception import HTMLParserInputError
@@ -8,8 +9,7 @@ from intelliscraper.utils import normalize_links
 
 
 class HTMLParser:
-    """
-    A utility class for parsing HTML content and extracting information.
+    """A utility class for parsing HTML content and extracting information.
 
     This class allows extraction of:
     - Plain text from HTML
@@ -24,8 +24,7 @@ class HTMLParser:
         html: str,
         html_parser: HTMLParserType = HTMLParserType.HTML5LIB,
     ):
-        """
-        Initialize the HTMLParser with raw HTML content.
+        """Initialize the HTMLParser with raw HTML content.
 
         Args:
             html (str): The HTML content to parse.
@@ -41,8 +40,7 @@ class HTMLParser:
 
     @cached_property
     def text(self) -> str:
-        """
-        Extract plain text from the HTML content.
+        """Extract plain text from the HTML content.
 
         Returns:
             str: Text content of the HTML.
@@ -52,11 +50,18 @@ class HTMLParser:
 
     @cached_property
     def links(self) -> list[str]:
-        """
-        Extract all hyperlinks from the HTML content.
+        """Extract all hyperlinks from the HTML content.
 
         Returns:
             list[str]: List of all 'href' attributes found in <a> tags.
         """
         all_links = [a.get("href") for a in self.soup.find_all("a") if a.get("href")]
         return normalize_links(base_url=self.base_url, links=all_links)
+
+    @cached_property
+    def markdown(self) -> str:
+        """Convert HTML to Markdown for LLM use case."""
+        # Remove navigation, advertisements, and forms from scraped content:
+        return convert_to_markdown(
+            self.html, preprocess_html=True, preprocessing_preset="aggressive"
+        )
