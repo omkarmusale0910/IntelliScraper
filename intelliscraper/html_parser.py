@@ -59,9 +59,14 @@ class HTMLParser:
         return normalize_links(base_url=self.base_url, links=all_links)
 
     @cached_property
-    def markdown(self) -> str:
+    def markdown_for_llm(self) -> str:
         """Convert HTML to Markdown for LLM use case."""
         # Remove navigation, advertisements, and forms from scraped content:
         return convert_to_markdown(
-            self.html, preprocess_html=True, preprocessing_preset="aggressive"
+            self.html, preprocess_html=True, preprocessing_preset="standard"
         )
+
+    @cached_property
+    def markdown(self) -> str:
+        """Convert HTML to Markdown."""
+        return convert_to_markdown(self.html)
