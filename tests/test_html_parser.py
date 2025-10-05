@@ -7,10 +7,10 @@ from intelliscraper.html_parser import HTMLParser
 TEST_DIR = os.path.dirname(__file__)
 
 # Test data extracted from: https://www.iana.org/help/example-domain
-SCRAP_HTML_DATA_FILEPATH_1 = os.path.join(TEST_DIR, "testdata/scarp_data_1.html")
+SCRAP_HTML_DATA_FILEPATH_1 = os.path.join(TEST_DIR, "testdata/scrap_data_1.html")
 
 # Test data extracted from: https://www.iana.org/domains
-SCRAP_HTML_DATA_FILEPATH_2 = os.path.join(TEST_DIR, "testdata/scarp_data_2.html")
+SCRAP_HTML_DATA_FILEPATH_2 = os.path.join(TEST_DIR, "testdata/scrap_data_2.html")
 
 MARKDOWN_PARSED_DATA_FOR_DATA_1 = os.path.join(
     TEST_DIR, "testdata/markdown/scrap_data_1.md"
