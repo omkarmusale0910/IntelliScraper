@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from playwright.sync_api import TimeoutError, sync_playwright
 
+from intelliscraper.enums import HTMLParserType
 from intelliscraper.exception import ScrapError
 from intelliscraper.html_parser import HTMLParser
 
@@ -23,6 +24,7 @@ class Scraper:
         context_options: dict = CONTEXT_OPTIONS,
         proxy: dict = None,
         open_new_page_per_scrape: bool = False,
+        html_parser_type: HTMLParserType = HTMLParserType.HTML5LIB,
     ):
         """Initialize the scraper.
 
@@ -31,10 +33,12 @@ class Scraper:
             context_options (dict): Optional settings for browser context.
             proxy (dict, optional): Proxy configuration.
             open_new_page_per_scrape (bool): If True, open a new page for each scrape.
+            html_parser_type: (HTMLParserType): The html parser to use internally (default: "html5lib").
         """
         self.playwright = sync_playwright().start()
         self.context_options = context_options
         self.open_new_page_per_scrape = open_new_page_per_scrape
+        html_parser_type = html_parser_type
         # Browser launch options
         launch_options = {
             "headless": headless,
@@ -94,13 +98,21 @@ class Scraper:
                 wait_until="networkidle",
                 timeout=timeout.total_seconds() * 1000,
             )
-            return HTMLParser(base_url=url, html=page.content())
+            return HTMLParser(
+                base_url=url,
+                html=page.content(),
+                html_parser_type=self.html_parser_type,
+            )
         except TimeoutError:
             logging.warning(
                 f"Timeout while loading URL: {url}. "
                 f"Waited {timeout.total_seconds()} seconds. Returning partial content."
             )
-            return HTMLParser(base_url=url, html=page.content())
+            return HTMLParser(
+                base_url=url,
+                html=page.content(),
+                html_parser_type=self.html_parser_type,
+            )
         except Exception as e:
             logging.error(f"Failed to scrape data for URL: {url}. Error: {e}")
             raise ScrapError(f"Scraping failed for URL: {url}") from e

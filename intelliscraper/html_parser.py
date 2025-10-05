@@ -22,13 +22,13 @@ class HTMLParser:
         self,
         base_url: str,
         html: str,
-        html_parser: HTMLParserType = HTMLParserType.HTML5LIB,
+        html_parser_type: HTMLParserType = HTMLParserType.HTML5LIB,
     ):
         """Initialize the HTMLParser with raw HTML content.
 
         Args:
             html (str): The HTML content to parse.
-            html_parser (HTMLParserType): The parser to use (default: "html5lib").
+            html_parser_type (HTMLParserType): The parser to use internally (default: "html5lib").
         """
         self.base_url = base_url
         if not (html and isinstance(html, str)):
@@ -36,7 +36,7 @@ class HTMLParser:
                 "HTMLParser expects a non-empty string as HTML input."
             )
         self.html = html
-        self.soup = BeautifulSoup(html, html_parser.value)
+        self.soup = BeautifulSoup(html, html_parser_type.value)
 
     @cached_property
     def text(self) -> str:
