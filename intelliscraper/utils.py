@@ -14,11 +14,4 @@ def normalize_links(base_url: str, links: list[str]) -> list[str]:
     """
     normalized = [urldefrag(urljoin(base_url, link))[0] for link in links]
 
-    seen = set()
-    result = []
-    for link in normalized:
-        if link not in seen:
-            seen.add(link)
-            result.append(link)
-
-    return result
+    return list(dict.fromkeys(normalized))

@@ -9,8 +9,8 @@ format:
 install:
 	uv sync
 
-playwright-cromium:
+playwright-chromium:
 	playwright install chromium
 
-test: install playwright-cromium
+test: install playwright-chromium
 	uv run -- pytest -vv -k .

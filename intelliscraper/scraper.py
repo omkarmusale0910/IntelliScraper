@@ -38,7 +38,7 @@ class Scraper:
         self.playwright = sync_playwright().start()
         self.context_options = context_options
         self.open_new_page_per_scrape = open_new_page_per_scrape
-        html_parser_type = html_parser_type
+        self.html_parser_type = html_parser_type
         # Browser launch options
         launch_options = {
             "headless": headless,
@@ -64,7 +64,7 @@ class Scraper:
             self.browser.close()
             self.playwright.stop()
             logging.debug("Cleanup complete")
-        except:
+        except Exception:
             pass
 
     def _get_page(self):

@@ -12,6 +12,10 @@ SCRAP_HTML_DATA_FILEPATH_1 = os.path.join(TEST_DIR, "testdata/scarp_data_1.html"
 # Test data extracted from: https://www.iana.org/domains
 SCRAP_HTML_DATA_FILEPATH_2 = os.path.join(TEST_DIR, "testdata/scarp_data_2.html")
 
+MARKDOWN_PARSED_DATA_FOR_DATA_1 = os.path.join(
+    TEST_DIR, "testdata/markdown/scrap_data_1.md"
+)
+
 
 @pytest.fixture(scope="class")
 def scrap_html_data() -> dict:
@@ -19,12 +23,12 @@ def scrap_html_data() -> dict:
     Returns a dictionary mapping file paths to their HTML content.
     """
     test_filepaths = [SCRAP_HTML_DATA_FILEPATH_1, SCRAP_HTML_DATA_FILEPATH_2]
-    test_htmlk_data = {}
+    test_html_data = {}
     for test_filepath in test_filepaths:
         with open(test_filepath, "r") as f:
             html_content = f.read()
-            test_htmlk_data[str(test_filepath)] = html_content
-    return test_htmlk_data
+            test_html_data[str(test_filepath)] = html_content
+    return test_html_data
 
 
 class TestHTMLParser:
@@ -120,7 +124,7 @@ class TestHTMLParser:
     def test_html_parser_markdown_extraction(self, scrap_html_data):
         """Verify that HTMLParser correctly converts scraped HTML into Markdown."""
         with open(
-            "/home/asus/Desktop/Projects/IntelliScraper/tests/testdata/markdown/scrap_data_1.md",
+            MARKDOWN_PARSED_DATA_FOR_DATA_1,
             "r",
         ) as f:
             expected_markdown = f.read()
