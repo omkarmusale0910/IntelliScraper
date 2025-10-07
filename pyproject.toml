@@ -9,6 +9,7 @@ dependencies = [
     "html-to-markdown>=1.16.0",
     "html5lib>=1.1",
     "playwright>=1.55.0",
+    "pydantic>=2.11.10",
 ]
 
 [dependency-groups]
