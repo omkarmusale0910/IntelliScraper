@@ -1,3 +1,4 @@
+import copy
 import json
 import logging
 import random
@@ -55,6 +56,7 @@ class Scraper:
 
         self.playwright = sync_playwright().start()
         self.open_new_page_per_scrape = open_new_page_per_scrape
+        browser_launch_options = copy.deepcopy(browser_launch_options)
         browser_launch_options.update({"headless": headless})
         self.browser_launch_options = browser_launch_options
         self.html_parser_type = html_parser_type
@@ -128,7 +130,7 @@ class Scraper:
                 "userAgent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
             ),
             # Locale & Timezone (from fingerprint)
-            locale=browser_fingerprint.get("language", ["en-US"])[0],
+            locale=browser_fingerprint.get("language", "en-US"),
             timezone_id=browser_fingerprint.get("timezone", "Asia/Calcutta"),
             # Device Settings
             device_scale_factor=1,
@@ -140,7 +142,7 @@ class Scraper:
             # Extra Headers
             extra_http_headers={
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                "Accept-Language": f"{browser_fingerprint.get('language',['en-US'])[0]},en;q=0.9",
+                "Accept-Language": f"{browser_fingerprint.get("language", "en-US")},en;q=0.9",
                 "Accept-Encoding": "gzip, deflate, br",
                 "DNT": "1",
                 "Connection": "keep-alive",
@@ -253,11 +255,8 @@ class Scraper:
         except Exception:
             pass
 
-    def _get_page(self, url: str) -> Page:
+    def _get_page(self) -> Page:
         """Get or create a page instance with session storage applied.
-
-        Args:
-            url: The URL to navigate to for setting storage.
 
         Returns:
             Page: A Playwright page instance.
@@ -270,7 +269,7 @@ class Scraper:
                 self.session_data.localStorage or self.session_data.sessionStorage
             ):
                 logging.debug("Applying session | local storage")
-                page.goto(url)
+                page.goto(self.session_data.base_url)
                 if self.session_data.localStorage:
                     page.evaluate(
                         """
@@ -336,7 +335,7 @@ class Scraper:
             - For custom behavior (advanced scrolling, mouse movements), extend this class.
         """
         logging.info(f"Scraping: {url}")
-        page = self._get_page(url=url)
+        page = self._get_page()
         try:
             page.goto(
                 url=url,
