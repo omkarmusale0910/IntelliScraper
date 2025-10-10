@@ -1,8 +1,9 @@
+import copy
 import json
 import logging
 import random
 from datetime import timedelta
-import copy
+
 from playwright.sync_api import Page, TimeoutError, sync_playwright
 
 from intelliscraper.common.constants import (
