@@ -4,36 +4,15 @@ Session Extraction Tool
 Extracts browser session data (cookies, storage, fingerprint) for web scraping.
 
 Usage:
-    python script.py --url "https://linkedin.com" --site "linkedin" --output "../linkedin_session.json"
+    uv run intelliscraper/scripts/get_session_data.py --url "https://linkedin.com" --site "linkedin" --output "../linkedin_session.json"
 """
 
 import argparse
 import logging
 
 from playwright.sync_api import sync_playwright
-from pydantic import BaseModel, Field
 
-
-class Session(BaseModel):
-    """Browser session data model."""
-
-    site: str = Field(description="The name or identifier of the target site.")
-    base_url: str = Field(description="The base URL used for scraping or crawling.")
-    cookies: list[dict] = Field(
-        description="List of cookies captured from the session."
-    )
-    localStorage: dict | None = Field(
-        default=None,
-        description="Key-value pairs from browser's localStorage, if available.",
-    )
-    sessionStorage: dict | None = Field(
-        default=None,
-        description="Key-value pairs from browser's sessionStorage, if available.",
-    )
-    fingerprint: dict = Field(
-        default_factory=dict,
-        description="Browser fingerprint data for session identification.",
-    )
+from intelliscraper.common.models import Session
 
 
 def extract_and_save_session(url: str, site: str, output_filepath: str):
