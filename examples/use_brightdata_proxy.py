@@ -7,7 +7,7 @@ from `intelliscraper.scraper` to scrape a web page through a Bright Data
 (residential) proxy network.
 
 Usage:
-    uv run intelliscraper/examples/use_brightdata_proxy.py
+    uv run examples/use_brightdata_proxy.py
 
 ### Prerequisites
 - Bright Data account and a valid proxy zone configuration.
@@ -17,10 +17,8 @@ Usage:
 import logging
 import os
 from datetime import timedelta
-from pprint import pprint
 
-from intelliscraper.proxy.brightdata import BrightDataProxy
-from intelliscraper.scraper import Scraper
+from intelliscraper import BrightDataProxy, Scraper
 
 logging.basicConfig(level=logging.INFO)
 

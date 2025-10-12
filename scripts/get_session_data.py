@@ -4,7 +4,7 @@ Session Extraction Tool
 Extracts browser session data (cookies, storage, fingerprint) for web scraping.
 
 Usage:
-    uv run intelliscraper/scripts/get_session_data.py --url "https://linkedin.com" --site "linkedin" --output "../linkedin_session.json"
+    uv run scripts/get_session_data.py --url "https://linkedin.com" --site "linkedin" --output "./linkedin_session.json"
 """
 
 import argparse
@@ -12,7 +12,7 @@ import logging
 
 from playwright.sync_api import sync_playwright
 
-from intelliscraper.common.models import Session
+from intelliscraper import Session
 
 
 def extract_and_save_session(url: str, site: str, output_filepath: str):
