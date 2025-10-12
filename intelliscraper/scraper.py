@@ -14,6 +14,7 @@ from intelliscraper.common.models import Proxy, Session
 from intelliscraper.enums import BrowsingMode, HTMLParserType
 from intelliscraper.exception import ScrapError
 from intelliscraper.html_parser import HTMLParser
+from intelliscraper.proxy.base import ProxyProvider
 
 
 class Scraper:
@@ -24,7 +25,7 @@ class Scraper:
         headless: bool = True,
         open_new_page_per_scrape: bool = False,
         browser_launch_options: dict = BROWSER_LAUNCH_OPTIONS,
-        proxy: Proxy | None = None,
+        proxy: Proxy | ProxyProvider | None = None,
         session_data: Session | None = None,
         browsing_mode: BrowsingMode | None = None,
         html_parser_type: HTMLParserType = HTMLParserType.HTML5LIB,
@@ -60,11 +61,14 @@ class Scraper:
         browser_launch_options.update({"headless": headless})
         self.browser_launch_options = browser_launch_options
         self.html_parser_type = html_parser_type
-        self.proxy = proxy
+        if proxy is not None and isinstance(proxy, ProxyProvider):
+            self.proxy = proxy.get_proxy()
+        else:
+            self.proxy = proxy
         self.session_data = session_data
 
-        if proxy:
-            logging.info(f"Using proxy: {proxy.server}")
+        if self.proxy:
+            logging.info(f"Using proxy: {self.proxy.server}")
 
         if session_data:
             logging.info("Using session data for authenticated scraping")
