@@ -1,0 +1,9 @@
+venv/
+.vscode
+.venv/
+.git
+.gitignore
+__pycache__
+*.egg-info
+*.pyc
+.pytest_cache
