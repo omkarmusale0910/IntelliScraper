@@ -113,7 +113,7 @@ class TestHTMLParser:
     ):
         """Test that HTMLParser correctly extracts links from given HTML test files."""
         html_data = scrap_html_data.get(filepath)
-        extracted_links = HTMLParser(base_url=base_url, html=html_data).links
+        extracted_links = HTMLParser(url=base_url, html=html_data).links
         assert expected_links == extracted_links, (
             f"Link extraction mismatch for {filepath}\n"
             f"Base URL: {base_url}\n"
@@ -130,6 +130,6 @@ class TestHTMLParser:
             expected_markdown = f.read()
         html_data = scrap_html_data.get(SCRAP_HTML_DATA_FILEPATH_1)
         generated_markdown = HTMLParser(
-            base_url="https://www.iana.org/help/example-domains", html=html_data
+            url="https://www.iana.org/help/example-domains", html=html_data
         ).markdown
         assert expected_markdown == generated_markdown
