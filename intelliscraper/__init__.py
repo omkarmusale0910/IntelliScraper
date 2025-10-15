@@ -11,9 +11,9 @@ from intelliscraper.common.constants import (
     BROWSER_LAUNCH_OPTIONS,
     DEFAULT_BROWSER_FINGERPRINT,
 )
-from intelliscraper.common.models import Proxy, Session
-from intelliscraper.enums import BrowsingMode, HTMLParserType
-from intelliscraper.exception import HTMLParserInputError, ScrapError
+from intelliscraper.common.models import Proxy, ScrapeRequest, ScrapeResponse, Session
+from intelliscraper.enums import BrowsingMode, HTMLParserType, ScrapStatus
+from intelliscraper.exception import HTMLParserInputError
 from intelliscraper.html_parser import HTMLParser
 from intelliscraper.proxy.base import ProxyProvider
 from intelliscraper.proxy.brightdata import BrightDataProxy
@@ -26,14 +26,16 @@ __all__ = [
     # Models
     "Proxy",
     "Session",
+    "ScrapeRequest",
+    "ScrapeResponse",
     # Enums
     "BrowsingMode",
     "HTMLParserType",
+    "ScrapStatus",
     # Proxy
     "ProxyProvider",
     "BrightDataProxy",
     # Exceptions
-    "ScrapError",
     "HTMLParserInputError",
     # constants
     "BROWSER_LAUNCH_OPTIONS",
