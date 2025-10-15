@@ -1,4 +1,9 @@
+from datetime import timedelta
+
 from pydantic import BaseModel, Field
+
+from intelliscraper.common.models import Proxy
+from intelliscraper.enums import BrowsingMode, ScrapStatus
 
 
 class Session(BaseModel):
@@ -46,4 +51,54 @@ class Proxy(BaseModel):
     )
     password: str | None = Field(
         default=None, description="Password for proxy authentication, if required."
+    )
+
+
+class ScrapeRequest(BaseModel):
+    """Represents the input configuration for a single scraping request.
+
+    This model defines all parameters required before initiating a scrape,
+    including the target URL, timeout, browser settings, proxy, and session data.
+    """
+
+    url: str = Field(description="The target URL that was scraped.")
+    timeout: timedelta = Field(
+        description="Maximum time allowed for the page to load before timing out."
+    )
+    browser_launch_options: dict | None = Field(
+        default=None,
+        description="Options used to launch the browser (e.g., headless mode, useragent, etc.).",
+    )
+    proxy: Proxy | None = Field(
+        default=None,
+        description="Proxy configuration details used during the scrape, if any.",
+    )
+    session_data: Session | None = Field(
+        default=None,
+        description="Session information such as cookies, storage state, and authentication data.",
+    )
+    browsing_mode: BrowsingMode | None = Field(
+        default=None,
+        description="Defines how the browser behaves during scraping (e.g., human-like or fast mode).",
+    )
+
+
+class ScrapeResponse(BaseModel):
+    """Represents the outcome of a web scraping operation, including
+    the result content, metadata, and environment details.
+    """
+
+    scrape_request: ScrapeRequest = Field(
+        description="The original request object containing all scraping parameters."
+    )
+    status: ScrapStatus = Field(
+        description="Indicates the final status of the scrape, such as completed, partial, or failed."
+    )
+    scrap_html_content: str | None = Field(
+        default=None,
+        description="The raw HTML content extracted from the target web page.",
+    )
+    error: Exception | None = Field(
+        default=None,
+        description="Error message if scraping fails; None when successful.",
     )
