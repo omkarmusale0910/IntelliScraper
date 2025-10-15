@@ -130,7 +130,7 @@ class Scraper:
             for page in self.pages:
                 try:
                     page.close()
-                except:
+                except Exception as e:
                     logging.debug(f"Failed to close page: {e}")
                     pass
 
@@ -159,7 +159,7 @@ class Scraper:
         """
         try:
             self.close()
-        except:
+        except Exception:
             pass
 
     def _create_browser_context(
@@ -414,6 +414,14 @@ class Scraper:
             )
 
         logging.info(f"Scraping: {url}")
+        scrape_request = ScrapeRequest(
+            url=url,
+            timeout=timeout,
+            browser_launch_options=self.browser_launch_options,
+            proxy=self.proxy,
+            session_data=self.session_data,
+            browsing_mode=self.browsing_mode,
+        )
         page = self._get_page()
         try:
             logging.debug(f"Navigating to: {url}")
@@ -456,14 +464,7 @@ class Scraper:
             # These techniques help avoid bot detection on sites with advanced security.
             logging.info(f"Successfully scraped: {url}")
             return ScrapeResponse(
-                scrape_request=ScrapeRequest(
-                    url=url,
-                    timeout=timeout,
-                    browser_launch_options=self.browser_launch_options,
-                    proxy=self.proxy,
-                    session_data=self.session_data,
-                    browsing_mode=self.browsing_mode,
-                ),
+                scrape_request=scrape_request,
                 status=ScrapStatus.COMPLETED,
                 scrap_html_content=page.content(),
             )
@@ -473,14 +474,7 @@ class Scraper:
                 f"Waited {timeout.total_seconds()} seconds. Returning partial content."
             )
             return ScrapeResponse(
-                scrape_request=ScrapeRequest(
-                    url=url,
-                    timeout=timeout,
-                    browser_launch_options=self.browser_launch_options,
-                    proxy=self.proxy,
-                    session_data=self.session_data,
-                    browsing_mode=self.browsing_mode,
-                ),
+                scrape_request=scrape_request,
                 status=ScrapStatus.PARTIAL,
                 scrap_html_content=page.content(),
                 error_msg=str(e),
@@ -488,14 +482,7 @@ class Scraper:
         except Exception as e:
             logging.error(f"Failed to scrape URL: {url}. Error: {e}", exc_info=True)
             return ScrapeResponse(
-                scrape_request=ScrapeRequest(
-                    url=url,
-                    timeout=timeout,
-                    browser_launch_options=self.browser_launch_options,
-                    proxy=self.proxy,
-                    session_data=self.session_data,
-                    browsing_mode=self.browsing_mode,
-                ),
+                scrape_request=scrape_request,
                 status=ScrapStatus.FAILED,
                 error_msg=str(e),
             )
