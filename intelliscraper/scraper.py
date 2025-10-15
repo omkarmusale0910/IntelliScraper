@@ -483,7 +483,7 @@ class Scraper:
                 ),
                 status=ScrapStatus.PARTIAL,
                 scrap_html_content=page.content(),
-                error=e,
+                error_msg=str(e),
             )
         except Exception as e:
             logging.error(f"Failed to scrape URL: {url}. Error: {e}", exc_info=True)
@@ -497,5 +497,5 @@ class Scraper:
                     browsing_mode=self.browsing_mode,
                 ),
                 status=ScrapStatus.FAILED,
-                error=e,
+                error_msg=str(e),
             )

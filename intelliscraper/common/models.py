@@ -2,7 +2,6 @@ from datetime import timedelta
 
 from pydantic import BaseModel, Field
 
-from intelliscraper.common.models import Proxy
 from intelliscraper.enums import BrowsingMode, ScrapStatus
 
 
@@ -98,7 +97,7 @@ class ScrapeResponse(BaseModel):
         default=None,
         description="The raw HTML content extracted from the target web page.",
     )
-    error: Exception | None = Field(
+    error_msg: str | None = Field(
         default=None,
         description="Error message if scraping fails; None when successful.",
     )
