@@ -133,7 +133,7 @@ def extract_and_save_session(url: str, site: str, output_filepath: str):
                 "Successfully extracted and saved data to the output JSON file"
             )
         except Exception as e:
-            logging.error((f"Failed to save session: {e}"))
+            logging.error(f"Failed to save session: {e}")
             raise
 
         finally:
@@ -143,19 +143,19 @@ def extract_and_save_session(url: str, site: str, output_filepath: str):
 def main():
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-    ag = argparse.ArgumentParser()
-    ag.add_argument(
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
         "--url", required=True, help="Url for which session data we want to extract"
     )
-    ag.add_argument(
+    parser.add_argument(
         "--site", required=True, help="Domain name of targeted site (any Unique string)"
     )
-    ag.add_argument(
+    parser.add_argument(
         "--output",
         required=True,
         help="output filepath where you want to save session data int file",
     )
-    args = ag.parse_args()
+    args = parser.parse_args()
     extract_and_save_session(url=args.url, site=args.site, output_filepath=args.output)
 
 
