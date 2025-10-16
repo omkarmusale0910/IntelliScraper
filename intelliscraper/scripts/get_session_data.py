@@ -4,7 +4,9 @@ Session Extraction Tool
 Extracts browser session data (cookies, storage, fingerprint) for web scraping.
 
 Usage:
-    uv run scripts/get_session_data.py --url "https://linkedin.com" --site "linkedin" --output "./linkedin_session.json"
+    uv run intelliscraper/scripts/get_session_data.py --url "https://himalayas.app" --site "himalayas" --output "./himalayas_session.json"
+    # Or, using the installed CLI command:
+    `intelliscraper-session --url "https://himalayas.app" --site "himalayas" --output "./himalayas_session.json"`
 """
 
 import argparse
@@ -12,7 +14,7 @@ import logging
 
 from playwright.sync_api import sync_playwright
 
-from intelliscraper import Session
+from intelliscraper.common.models import Session
 
 
 def extract_and_save_session(url: str, site: str, output_filepath: str):
@@ -133,27 +135,31 @@ def extract_and_save_session(url: str, site: str, output_filepath: str):
                 "Successfully extracted and saved data to the output JSON file"
             )
         except Exception as e:
-            logging.error((f"Failed to save session: {e}"))
+            logging.error(f"Failed to save session: {e}")
             raise
 
         finally:
             browser.close()
 
 
-if __name__ == "__main__":
+def main():
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-    ag = argparse.ArgumentParser()
-    ag.add_argument(
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
         "--url", required=True, help="Url for which session data we want to extract"
     )
-    ag.add_argument(
+    parser.add_argument(
         "--site", required=True, help="Domain name of targeted site (any Unique string)"
     )
-    ag.add_argument(
+    parser.add_argument(
         "--output",
         required=True,
         help="output filepath where you want to save session data int file",
     )
-    args = ag.parse_args()
+    args = parser.parse_args()
     extract_and_save_session(url=args.url, site=args.site, output_filepath=args.output)
+
+
+if __name__ == "__main__":
+    main()

@@ -20,7 +20,7 @@ class HTMLParser:
 
     def __init__(
         self,
-        base_url: str,
+        url: str,
         html: str,
         html_parser_type: HTMLParserType = HTMLParserType.HTML5LIB,
     ):
@@ -30,7 +30,7 @@ class HTMLParser:
             html (str): The HTML content to parse.
             html_parser_type (HTMLParserType): The parser to use internally (default: "html5lib").
         """
-        self.base_url = base_url
+        self.url = url
         if not (html and isinstance(html, str)):
             raise HTMLParserInputError(
                 "HTMLParser expects a non-empty string as HTML input."
@@ -56,7 +56,7 @@ class HTMLParser:
             list[str]: List of all 'href' attributes found in <a> tags.
         """
         all_links = [a.get("href") for a in self.soup.find_all("a") if a.get("href")]
-        return normalize_links(base_url=self.base_url, links=all_links)
+        return normalize_links(base_url=self.url, links=all_links)
 
     @cached_property
     def markdown_for_llm(self) -> str:

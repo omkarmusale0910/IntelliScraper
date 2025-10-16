@@ -1,17 +1,19 @@
-from urllib.parse import urldefrag, urljoin
+from urllib.parse import urldefrag, urljoin, urlparse
 
 
-def normalize_links(base_url: str, links: list[str]) -> list[str]:
+def normalize_links(links: list[str], base_url: str | None = None) -> list[str]:
     """
-    Convert relative links to absolute URLs, remove fragments, and remove duplicates.
-
-    Args:
-        base_url (str): The base URL to resolve relative links.
-        links (list[str]): List of links (absolute or relative).
-
-    Returns:
-        list[str]: List of unique, absolute URLs.
+    Convert relative links to absolute URLs, remove fragments, remove duplicates.
+    If base_url is None, only absolute URLs are kept.
     """
-    normalized = [urldefrag(urljoin(base_url, link))[0] for link in links]
+    normalized = [
+        urldefrag(urljoin(base_url, link) if base_url else link)[0]
+        for link in links
+        if base_url or urlparse(link).scheme in ("http", "https")
+    ]
+    # Keep only HTTP/HTTPS URLs
+    normalized = [
+        link for link in normalized if urlparse(link).scheme in ("http", "https")
+    ]
 
     return list(dict.fromkeys(normalized))

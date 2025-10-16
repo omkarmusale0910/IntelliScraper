@@ -18,7 +18,7 @@ import logging
 import os
 from datetime import timedelta
 
-from intelliscraper import BrightDataProxy, Scraper
+from intelliscraper import BrightDataProxy, HTMLParser, Scraper, ScrapStatus
 
 logging.basicConfig(level=logging.INFO)
 
@@ -45,10 +45,17 @@ if __name__ == "__main__":
         password=password,
     )
     web_scraper_with_proxy = Scraper(headless=True, proxy=bright_data_proxy)
-    html_parser = web_scraper_with_proxy.scrap(
+    scrape_response = web_scraper_with_proxy.scrape(
         url="https://www.iana.org/help/example-domains", timeout=timedelta(seconds=30)
     )
-    logging.info("Scrap content using bright data proxy")
-    logging.info(html_parser.markdown)
-    logging.info("Scrap links using bright data proxy")
-    logging.info(html_parser.links)
+    if scrape_response.status != ScrapStatus.FAILED:
+        html_parser = HTMLParser(
+            url=scrape_response.scrape_request.url,
+            html=scrape_response.scrap_html_content,
+        )
+        logging.info("Scrap content using bright data proxy")
+        logging.info(html_parser.markdown)
+        logging.info("Scrap links using bright data proxy")
+        logging.info(html_parser.links)
+    else:
+        logging.error(f"Scrape failed for URL: {scrape_response.scrape_request.url}")

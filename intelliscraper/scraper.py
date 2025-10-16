@@ -4,16 +4,16 @@ import logging
 import random
 from datetime import timedelta
 
-from playwright.sync_api import Page, TimeoutError, sync_playwright
+from playwright.sync_api import Page
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import sync_playwright
 
 from intelliscraper.common.constants import (
     BROWSER_LAUNCH_OPTIONS,
     DEFAULT_BROWSER_FINGERPRINT,
 )
-from intelliscraper.common.models import Proxy, Session
-from intelliscraper.enums import BrowsingMode, HTMLParserType
-from intelliscraper.exception import ScrapError
-from intelliscraper.html_parser import HTMLParser
+from intelliscraper.common.models import Proxy, ScrapeRequest, ScrapeResponse, Session
+from intelliscraper.enums import BrowsingMode, ScrapStatus
 from intelliscraper.proxy.base import ProxyProvider
 
 
@@ -23,49 +23,44 @@ class Scraper:
     def __init__(
         self,
         headless: bool = True,
-        open_new_page_per_scrape: bool = False,
         browser_launch_options: dict = BROWSER_LAUNCH_OPTIONS,
         proxy: Proxy | ProxyProvider | None = None,
         session_data: Session | None = None,
         browsing_mode: BrowsingMode | None = None,
-        html_parser_type: HTMLParserType = HTMLParserType.HTML5LIB,
     ):
         """Initialize the scraper with browser and session configuration.
 
         Args:
             headless: Run browser without UI. Defaults to True.
-            open_new_page_per_scrape: Open a new page for each scrape operation.
-                Defaults to False.
-            browser_launch_options: Custom Chromium launch options. Defaults to
-                BROWSER_LAUNCH_OPTIONS.
-            proxy: Proxy configuration for routing requests. Defaults to None.
-            session_data: Pre-authenticated session containing cookies, localStorage,
-                sessionStorage, and device fingerprint for bypassing login.
-                Defaults to None.
-            browsing_mode: Browsing behavior mode (FAST or HUMAN_LIKE). If not provided,
-                automatically determined based on proxy/session_data presence.
-                Defaults to None.
-            html_parser_type: HTML parser to use (e.g., html5lib, lxml). Defaults to
-                HTMLParserType.HTML5LIB.
+            browser_launch_options: Custom Chromium launch options. If None, uses
+                default options. Defaults to None.
+            proxy: Proxy configuration or ProxyProvider instance. Defaults to None.
+            session_data: Pre-authenticated session with cookies, localStorage,
+                sessionStorage, and browser fingerprint. Defaults to None.
+            browsing_mode: Behavior mode - FAST (no human simulation) or HUMAN_LIKE
+                (scrolling, delays). Auto-determined if None. Defaults to None.
 
         Note:
-            - Browsing mode priority: If proxy is provided, defaults to FAST mode.
-              If session_data is provided, defaults to HUMAN_LIKE mode.
-            - Session data is essential for highly protected sites like LinkedIn...
+            Browsing mode is automatically set based on configuration:
+            - With proxy: FAST mode (optimized for speed)
+            - With session_data: HUMAN_LIKE mode (stealth)
+            - Neither: HUMAN_LIKE mode (default)
         """
-        logging.debug("Initializing Scraper")
 
+        logging.debug("Initializing Scraper")
         self.playwright = sync_playwright().start()
-        self.open_new_page_per_scrape = open_new_page_per_scrape
         browser_launch_options = copy.deepcopy(browser_launch_options)
         browser_launch_options.update({"headless": headless})
         self.browser_launch_options = browser_launch_options
-        self.html_parser_type = html_parser_type
         if proxy is not None and isinstance(proxy, ProxyProvider):
+            logging.debug(
+                f"Converting ProxyProvider to Proxy: {proxy.__class__.__name__}"
+            )
             self.proxy = proxy.get_proxy()
         else:
             self.proxy = proxy
         self.session_data = session_data
+        self._closed = False
 
         if self.proxy:
             logging.info(f"Using proxy: {self.proxy.server}")
@@ -73,12 +68,17 @@ class Scraper:
         if session_data:
             logging.info("Using session data for authenticated scraping")
 
+        logging.debug(f"Launching browser with options: {self.browser_launch_options}")
         self.browser = self.playwright.chromium.launch(**self.browser_launch_options)
-        logging.debug(f"Browser launched with options {self.browser_launch_options}")
+        logging.debug(f"Browser launched successfully")
+
         browser_fingerprint = (
             self.session_data.fingerprint
             if self.session_data
             else DEFAULT_BROWSER_FINGERPRINT
+        )
+        logging.debug(
+            "Creating browser context with fingerprint and proxy if available"
         )
         self._create_browser_context(
             browser_fingerprint=browser_fingerprint, proxy=self.proxy
@@ -104,10 +104,69 @@ class Scraper:
         self._add_cookies()
         self._apply_anti_detection_scripts()
 
+    def __enter__(self):
+        """Context manager entry point."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit point - clean up resources."""
+        self.close()
+        return False
+
+    def close(self):
+        """Explicitly close browser and cleanup all resources."""
+        if self._closed:
+            return
+
+        self._closed = True
+        logging.debug("Starting cleanup...")
+
+        try:
+            # Close all pages
+            for page in self.pages:
+                try:
+                    page.close()
+                except Exception as e:
+                    logging.debug(f"Failed to close page: {e}")
+                    pass
+
+            # Close context
+            if hasattr(self, "context"):
+                self.context.close()
+
+            # Close browser
+            if hasattr(self, "browser"):
+                self.browser.close()
+
+            # Stop playwright
+            if hasattr(self, "playwright"):
+                self.playwright.stop()
+
+            logging.debug("Cleanup complete")
+
+        except Exception as e:
+            logging.error(f"Error during cleanup: {e}")
+
+    def __del__(self):
+        """Destructor for fallback cleanup.
+
+        Note:
+            This is a safety net. Prefer using context manager or explicit close().
+        """
+        try:
+            self.close()
+        except Exception:
+            pass
+
     def _create_browser_context(
         self, browser_fingerprint: dict | None, proxy: Proxy | None
     ):
-        """Create a browser context with fingerprint and proxy configuration."""
+        """Create browser context with fingerprint and proxy configuration.
+
+        Args:
+            browser_fingerprint: Browser fingerprint for anti-detection.
+            proxy: Proxy configuration.
+        """
         logging.debug("Creating browser context")
         if browser_fingerprint is None:
             browser_fingerprint = DEFAULT_BROWSER_FINGERPRINT
@@ -153,12 +212,14 @@ class Scraper:
                 "Upgrade-Insecure-Requests": "1",
             },
         )
+        logging.debug("Browser context created successfully")
 
     def _add_cookies(self):
         """Add cookies from session data to the browser context."""
         if self.session_data and self.session_data.cookies:
             logging.debug(f"Adding {len(self.session_data.cookies)} cookies")
             self.context.add_cookies(self.session_data.cookies)
+            logging.debug("Cookies added successfully")
 
     def _apply_anti_detection_scripts(self):
         """Apply JavaScript scripts to mask automation and avoid bot detection."""
@@ -248,16 +309,7 @@ class Scraper:
             }};
         """
         )
-
-    def __del__(self):
-        """Cleanup on destruction."""
-        try:
-            self.context.close()
-            self.browser.close()
-            self.playwright.stop()
-            logging.debug("Cleanup complete")
-        except Exception:
-            pass
+        logging.debug("Anti-detection scripts applied")
 
     def _get_page(self) -> Page:
         """Get or create a page instance with session storage applied.
@@ -305,48 +357,106 @@ class Scraper:
                 """,
                         self.session_data.sessionStorage,
                     )
+                logging.debug("Session storage applied successfully")
             self.pages.append(page)
             return page
 
-        if self.open_new_page_per_scrape:
-            logging.debug(f"Creating new page (total: {len(self.pages) + 1})")
-            # Once we have added local and session storage,
-            # it will be per context basis, so for every new page,
-            # we don't need to add this local and session storage;
-            # only once is required.
-            page = self.context.new_page()
-            self.pages.append(page)
-
+        logging.debug("Reusing existing page")
         return self.pages[-1]
 
-    def scrap(self, url: str, timeout: timedelta = timedelta(seconds=30)) -> HTMLParser:
-        """Navigate to the given URL and return the page content.
+    def scrape(
+        self,
+        url: str,
+        timeout: timedelta = timedelta(seconds=30),
+        page: Page | None = None,
+    ) -> ScrapeResponse:
+        """Scrape content from a URL.
+
+        Navigates to the URL, waits for content to load, and returns the page HTML.
+        Applies human-like behavior (scrolling, delays) if browsing mode is HUMAN_LIKE.
 
         Args:
-            url (str): The target URL to scrape.
-            timeout (timedelta, optional): Maximum wait time for page load.
-                                           Defaults to 30 seconds.
+            url: Target URL to scrape.
+            timeout: Maximum time to wait for page load. Defaults to 30 seconds.
+            page: Optional Playwright Page instance to use. If None, creates or reuses
+                internal page. Defaults to None. the page should be created
+                from the scraper's context (e.g., scraper.context.new_page())
 
         Returns:
-            str: The HTML content of the page, even if a timeout occurs.
+            ScrapeResponse: Response object containing:
+                - status: COMPLETED, PARTIAL, or FAILED
+                - scrap_html_content: Page HTML (if successful or partial)
+                - error: Exception details (if failed or partial)
+                - scrape_request: Original request parameters
 
-        Raises:
-            ScrapError: If scraping fails due to an unexpected error.
+        Examples:
+            >>> scraper = Scraper()
+            >>> response = scraper.scrape("https://example.com")
+            >>> if response.status == ScrapStatus.COMPLETED:
+            ...     print(response.scrap_html_content)
+
+            >>> response = scraper.scrape("https://slow-site.com", timeout=timedelta(minutes=2))
+
+
+            With session data for authenticated scraping:
+            >>> import json
+            >>> with open("himalayas_session.json") as f:
+            ...     session = Session(**json.load(f))
+            >>> scraper = Scraper(session_data=session)
+            >>> response = scraper.scrape("https://himalayas.app/jobs/python?experience=entry-level%2Cmid-level")
+
+            Using an externally created page:
+            >>> with Scraper() as scraper:
+            ...     my_page = scraper.context.new_page()
+            ...     # Perform custom actions on my_page if needed
+            ...     response = scraper.scrape("https://example.com", page=my_page)
+
+            Scraping multiple URLs sequentially:
+            >>> urls = ["https://example1.com", "https://example2.com"]
+            >>> with Scraper() as scraper:
+            ...     for url in urls:
+            ...         response = scraper.scrape(url)
+            ...         if response.status == ScrapStatus.COMPLETED:
+            ...             print(f"Scraped: {url}")
+
 
         Note:
-            - Returns partial content if timeout occurs during loading.
-            - Applies human-like scrolling behavior when browsing_mode is HUMAN_LIKE.
-            - For custom behavior (advanced scrolling, mouse movements), extend this class.
+            - Returns PARTIAL status if timeout occurs (with partial content)
+            - Returns FAILED status if other errors occur
+            - Applies scrolling and delays in HUMAN_LIKE mode
+            - For advanced behavior (mouse movements, clicks), extend this class
         """
+
+        if self._closed:
+            logging.error("Cannot scrape: Scraper is closed")
+            raise RuntimeError(
+                "Scraper is closed. Create a new instance or use context manager."
+            )
+        if self.session_data and not url.startswith(self.session_data.base_url):
+            logging.warning(
+                f"URL {url} does not match session base URL {self.session_data.base_url}. "
+                "Scraping may fail due to invalid session."
+            )
+
         logging.info(f"Scraping: {url}")
-        page = self._get_page()
+        scrape_request = ScrapeRequest(
+            url=url,
+            timeout=timeout,
+            browser_launch_options=self.browser_launch_options,
+            proxy=self.proxy,
+            session_data=self.session_data,
+            browsing_mode=self.browsing_mode,
+        )
+        if not isinstance(page, Page):
+            page = self._get_page()
         try:
+            logging.debug(f"Navigating to: {url}")
             page.goto(
                 url=url,
                 wait_until="networkidle",
                 timeout=timeout.total_seconds() * 1000,
             )
-            logging.debug(f"Page loaded: {url}")
+            logging.debug(f"Page loaded successfully :{url}")
             # Optional: Add extra waiting if needed
             # Use wait_for_selector() if you need to wait for a specific element to appear on the page
             # Example: page.wait_for_selector(".product-list", timeout=60000)
@@ -379,21 +489,26 @@ class Scraper:
             # - Click interactions with elements
             # These techniques help avoid bot detection on sites with advanced security.
             logging.info(f"Successfully scraped: {url}")
-            return HTMLParser(
-                base_url=url,
-                html=page.content(),
-                html_parser_type=self.html_parser_type,
+            return ScrapeResponse(
+                scrape_request=scrape_request,
+                status=ScrapStatus.COMPLETED,
+                scrap_html_content=page.content(),
             )
-        except TimeoutError:
+        except PlaywrightTimeoutError as e:
             logging.warning(
                 f"Timeout while loading URL: {url}. "
                 f"Waited {timeout.total_seconds()} seconds. Returning partial content."
             )
-            return HTMLParser(
-                base_url=url,
-                html=page.content(),
-                html_parser_type=self.html_parser_type,
+            return ScrapeResponse(
+                scrape_request=scrape_request,
+                status=ScrapStatus.PARTIAL,
+                scrap_html_content=page.content(),
+                error_msg=str(e),
             )
         except Exception as e:
             logging.error(f"Failed to scrape URL: {url}. Error: {e}", exc_info=True)
-            raise ScrapError(f"Scraping failed for URL: {url}") from e
+            return ScrapeResponse(
+                scrape_request=scrape_request,
+                status=ScrapStatus.FAILED,
+                error_msg=str(e),
+            )
