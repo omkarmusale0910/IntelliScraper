@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 # This tells pip/uv HOW to build your package into a .whl file
 
 [project]
-name = "intelliscraper"
+name = "intelliscraper-core"
 version = "0.1.0"
 description = "Smart web scraper that abstracts away complexity - from simple sites to highly protected ones."
 readme = "README.md"
@@ -59,7 +59,7 @@ Changelog = "https://github.com/omkarmusale0910/IntelliScraper/blob/main/CHANGEL
 
 
 [tool.hatch.build.targets.wheel]
-packages = ["intelliscraper"]
+packages = ["intelliscraper-core"]
 
 exclude = ["/.github/", "/tests/", "/.gitignore", "**/*.pyc", "**/__pycache__/"]
 

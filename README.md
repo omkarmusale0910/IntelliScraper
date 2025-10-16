@@ -20,8 +20,10 @@ A powerful, anti-bot detection web scraping solution built with Playwright, desi
 ### Installation
 
 ```bash
-pip install intelliscraper
+pip install intelliscraper-core
 ```
+
+> For more reference : https://pypi.org/project/intelliscraper-core/
 
 ### Basic Scraping (No Authentication)
 
