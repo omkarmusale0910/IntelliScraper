@@ -379,7 +379,8 @@ class Scraper:
             url: Target URL to scrape.
             timeout: Maximum time to wait for page load. Defaults to 30 seconds.
             page: Optional Playwright Page instance to use. If None, creates or reuses
-                internal page. Defaults to None.
+                internal page. Defaults to None. the page should be created
+                from the scraper's context (e.g., scraper.context.new_page())
 
         Returns:
             ScrapeResponse: Response object containing:
@@ -396,12 +397,19 @@ class Scraper:
 
             >>> response = scraper.scrape("https://slow-site.com", timeout=timedelta(minutes=2))
 
+
             With session data for authenticated scraping:
             >>> import json
             >>> with open("linkedin_session.json") as f:
             ...     session = Session(**json.load(f))
             >>> scraper = Scraper(session_data=session)
             >>> response = scraper.scrape("https://linkedin.com/in/profile")
+
+            Using an externally created page:
+            >>> with Scraper() as scraper:
+            ...     my_page = scraper.context.new_page()
+            ...     # Perform custom actions on my_page if needed
+            ...     response = scraper.scrape("https://example.com", page=my_page)
 
             Scraping multiple URLs sequentially:
             >>> urls = ["https://example1.com", "https://example2.com"]
@@ -439,7 +447,7 @@ class Scraper:
             session_data=self.session_data,
             browsing_mode=self.browsing_mode,
         )
-        if page is None or not isinstance(page, Page):
+        if not isinstance(page, Page):
             page = self._get_page()
         try:
             logging.debug(f"Navigating to: {url}")
