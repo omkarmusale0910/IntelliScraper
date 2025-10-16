@@ -20,8 +20,15 @@ A powerful, anti-bot detection web scraping solution built with Playwright, desi
 ### Installation
 
 ```bash
+# Install the package
 pip install intelliscraper-core
+
+# Install Playwright browser (Chromium)
+playwright install chromium
 ```
+> [!NOTE]  
+> Playwright requires browser binaries to be installed separately.  
+> The command above installs Chromium, which is necessary for this library to work.  
 
 > For more reference : https://pypi.org/project/intelliscraper-core/
 
