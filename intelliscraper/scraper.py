@@ -4,13 +4,9 @@ import logging
 import random
 from datetime import timedelta
 
-from playwright.sync_api import (
-    Page,
-)
+from playwright.sync_api import Page
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
-from playwright.sync_api import (
-    sync_playwright,
-)
+from playwright.sync_api import sync_playwright
 
 from intelliscraper.common.constants import (
     BROWSER_LAUNCH_OPTIONS,
@@ -369,7 +365,10 @@ class Scraper:
         return self.pages[-1]
 
     def scrape(
-        self, url: str, timeout: timedelta = timedelta(seconds=30)
+        self,
+        url: str,
+        timeout: timedelta = timedelta(seconds=30),
+        page: Page | None = None,
     ) -> ScrapeResponse:
         """Scrape content from a URL.
 
@@ -379,6 +378,9 @@ class Scraper:
         Args:
             url: Target URL to scrape.
             timeout: Maximum time to wait for page load. Defaults to 30 seconds.
+            page: Optional Playwright Page instance to use. If None, creates or reuses
+                internal page. Defaults to None. the page should be created
+                from the scraper's context (e.g., scraper.context.new_page())
 
         Returns:
             ScrapeResponse: Response object containing:
@@ -394,6 +396,29 @@ class Scraper:
             ...     print(response.scrap_html_content)
 
             >>> response = scraper.scrape("https://slow-site.com", timeout=timedelta(minutes=2))
+
+
+            With session data for authenticated scraping:
+            >>> import json
+            >>> with open("linkedin_session.json") as f:
+            ...     session = Session(**json.load(f))
+            >>> scraper = Scraper(session_data=session)
+            >>> response = scraper.scrape("https://linkedin.com/in/profile")
+
+            Using an externally created page:
+            >>> with Scraper() as scraper:
+            ...     my_page = scraper.context.new_page()
+            ...     # Perform custom actions on my_page if needed
+            ...     response = scraper.scrape("https://example.com", page=my_page)
+
+            Scraping multiple URLs sequentially:
+            >>> urls = ["https://example1.com", "https://example2.com"]
+            >>> with Scraper() as scraper:
+            ...     for url in urls:
+            ...         response = scraper.scrape(url)
+            ...         if response.status == ScrapStatus.COMPLETED:
+            ...             print(f"Scraped: {url}")
+
 
         Note:
             - Returns PARTIAL status if timeout occurs (with partial content)
@@ -422,7 +447,8 @@ class Scraper:
             session_data=self.session_data,
             browsing_mode=self.browsing_mode,
         )
-        page = self._get_page()
+        if not isinstance(page, Page):
+            page = self._get_page()
         try:
             logging.debug(f"Navigating to: {url}")
             page.goto(
