@@ -21,7 +21,7 @@ authors = [{ name = "Omkar Musale", email = "omkarmusaleich@gmail.com" }]
 
 maintainers = [{ name = "Omkar Musale", email = "omkarmusaleich@gmail.com" }]
 
-license = { text = "MIT" }
+license = { file = "LICENSE" }
 
 keywords = [
     "web-scraping",
@@ -61,7 +61,7 @@ Changelog = "https://github.com/omkarmusale0910/IntelliScraper/blob/main/CHANGEL
 [tool.hatch.build.targets.wheel]
 packages = ["intelliscraper"]
 
-exclude = ["/.github", "/tests", "/.gitignore", "*.pyc", "__pycache__"]
+exclude = ["/.github/", "/tests/", "/.gitignore", "**/*.pyc", "**/__pycache__/"]
 
 [project.scripts]
 intelliscraper-session = "intelliscraper.scripts.get_session_data:main"
