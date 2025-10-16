@@ -1,6 +1,6 @@
 # IntelliScraper
 
-A powerful, anti bot detection web scraping solution built with Playwright, designed for scraping protected sites like LinkedIn and other platforms that require authentication. Features session management, proxy support, and advanced HTML parsing capabilities.
+A powerful, anti-bot detection web scraping solution built with Playwright, designed for scraping protected sites like LinkedIn and other platforms that require authentication. Features session management, proxy support, and advanced HTML parsing capabilities.
 
 ![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -116,7 +116,7 @@ response = scraper.scrape("https://example.com")
 
 ## 📋 Requirements
 
-- Python 3.12
+- Python 3.12+
 - Playwright
 - Compatible with Windows, macOS, and Linux
 
@@ -138,7 +138,7 @@ This project is licensed under the MIT License.
 
 ## 📧 Support
 
-For issues, questions, or contributions, please visit our [GitHub repository](https://github.com/omkarmusale0910/IntelliScraper).
+For issues, questions, or contributions, please visit our [GitHub repository's issues page](https://github.com/omkarmusale0910/IntelliScraper/issues).
 
 ---
 
