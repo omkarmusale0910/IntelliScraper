@@ -55,7 +55,7 @@ Homepage = "https://github.com/omkarmusale0910/IntelliScraper"
 # Documentation = "https://intelliscraper.readthedocs.io"  # If you have docs
 Repository = "https://github.com/omkarmusale0910/IntelliScraper"
 Issues = "https://github.com/omkarmusale0910/IntelliScraper/issues"
-# Changelog = "https://github.com/yourusername/intelliscraper/blob/main/CHANGELOG.md"
+Changelog = "https://github.com/omkarmusale0910/IntelliScraper/blob/main/CHANGELOG.md"
 
 
 [tool.hatch.build.targets.wheel]
