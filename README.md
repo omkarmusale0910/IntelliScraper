@@ -1,6 +1,6 @@
 # IntelliScraper
 
-A powerful, anti-bot detection web scraping solution built with Playwright, designed for scraping protected sites like LinkedIn and other platforms that require authentication. Features session management, proxy support, and advanced HTML parsing capabilities.
+A powerful, anti-bot detection web scraping solution built with Playwright, designed for scraping protected sites like Himalayas Jobs and other platforms that require authentication. Features session management, proxy support, and advanced HTML parsing capabilities.
 
 ![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -41,7 +41,7 @@ if response.status == ScrapStatus.COMPLETED:
 Use the CLI tool to create session data for authenticated scraping. The tool will open a browser where you can manually log in:
 
 ```bash
-intelliscraper-session --url "https://linkedin.com" --site "linkedin" --output "./linkedin_session.json"
+intelliscraper-session --url "https://himalayas.app" --site "himalayas" --output "./himalaya_session.json"
 ```
 
 **How it works:**
@@ -57,12 +57,12 @@ import json
 from intelliscraper import Scraper, Session, ScrapStatus
 
 # Load session data
-with open("linkedin_session.json") as f:
+with open("himalaya_session.json") as f:
     session = Session(**json.load(f))
 
 # Scrape with authentication
 scraper = Scraper(session_data=session)
-response = scraper.scrape("https://linkedin.com/in/profile")
+response = scraper.scrape("https://himalayas.app/jobs/python?experience=entry-level%2Cmid-level")
 
 if response.status == ScrapStatus.COMPLETED:
     print("Successfully scraped authenticated page!")
