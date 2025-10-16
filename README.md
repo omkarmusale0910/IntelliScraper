@@ -27,7 +27,8 @@ pip install intelliscraper-core
 playwright install chromium
 ```
 > [!NOTE]  
-> After installing the package, you must install the Chromium browser for Playwright to work properly.
+> Playwright requires browser binaries to be installed separately.  
+> The command above installs Chromium, which is necessary for this library to work.  
 
 > For more reference : https://pypi.org/project/intelliscraper-core/
 
