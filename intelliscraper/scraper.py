@@ -400,10 +400,10 @@ class Scraper:
 
             With session data for authenticated scraping:
             >>> import json
-            >>> with open("linkedin_session.json") as f:
+            >>> with open("himalayas_session.json") as f:
             ...     session = Session(**json.load(f))
             >>> scraper = Scraper(session_data=session)
-            >>> response = scraper.scrape("https://linkedin.com/in/profile")
+            >>> response = scraper.scrape("https://himalayas.app/jobs/python?experience=entry-level%2Cmid-level")
 
             Using an externally created page:
             >>> with Scraper() as scraper:

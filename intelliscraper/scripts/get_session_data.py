@@ -4,7 +4,9 @@ Session Extraction Tool
 Extracts browser session data (cookies, storage, fingerprint) for web scraping.
 
 Usage:
-    uv run intelliscraper/scripts/get_session_data.py --url "https://linkedin.com" --site "linkedin" --output "./linkedin_session.json"
+    uv run intelliscraper/scripts/get_session_data.py --url "https://himalayas.app" --site "himalayas" --output "./himalayas_session.json"
+    # Or, using the installed CLI command:
+    `intelliscraper-session --url "https://himalayas.app" --site "himalayas" --output "./himalayas_session.json"`
 """
 
 import argparse
