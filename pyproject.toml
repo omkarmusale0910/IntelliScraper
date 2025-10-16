@@ -62,3 +62,6 @@ Issues = "https://github.com/omkarmusale0910/IntelliScraper/issues"
 packages = ["intelliscraper"]
 
 exclude = ["/.github", "/tests", "/.gitignore", "*.pyc", "__pycache__"]
+
+[project.scripts]
+intelliscraper-session = "intelliscraper.scripts.get_session_data:main"

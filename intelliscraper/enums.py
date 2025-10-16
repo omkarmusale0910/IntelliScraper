@@ -23,3 +23,11 @@ class BrowsingMode(str, Enum):
 
     HUMAN_LIKE = "human_like"
     FAST = "fast"
+
+
+class ScrapStatus(str, Enum):
+    """Represents the status of a scraping operation."""
+
+    PARTIAL = "partial"
+    COMPLETED = "completed"
+    FAILED = "failed"
