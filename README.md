@@ -41,7 +41,7 @@ if response.status == ScrapStatus.COMPLETED:
 Use the CLI tool to create session data for authenticated scraping. The tool will open a browser where you can manually log in:
 
 ```bash
-intelliscraper-session --url "https://himalayas.app" --site "himalayas" --output "./himalaya_session.json"
+intelliscraper-session --url "https://himalayas.app" --site "himalayas" --output "./himalayas_session.json"
 ```
 
 **How it works:**
@@ -57,7 +57,7 @@ import json
 from intelliscraper import Scraper, Session, ScrapStatus
 
 # Load session data
-with open("himalaya_session.json") as f:
+with open("himalayas_session.json") as f:
     session = Session(**json.load(f))
 
 # Scrape with authentication
