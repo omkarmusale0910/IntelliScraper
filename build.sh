@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e 
+set -eu
 
 echo "Cleaning old builds..."
 rm -rf dist build *.egg-info
@@ -7,7 +7,8 @@ rm -rf dist build *.egg-info
 echo "Building package..."
 uv build
 
-echo "Publishing to PyPI..."
-uv publish
-
-echo "Successfully published!"
+if [[ "$1" == "--publish" ]]; then
+  echo "Publishing to PyPI..."
+  uv publish
+  echo "Successfully published!"
+fi
