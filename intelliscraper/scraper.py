@@ -491,7 +491,7 @@ class Scraper:
             logging.info(f"Successfully scraped: {url}")
             return ScrapeResponse(
                 scrape_request=scrape_request,
-                status=ScrapStatus.COMPLETED,
+                status=ScrapStatus.SUCCESS,
                 scrap_html_content=page.content(),
             )
         except PlaywrightTimeoutError as e:
@@ -501,7 +501,7 @@ class Scraper:
             )
             return ScrapeResponse(
                 scrape_request=scrape_request,
-                status=ScrapStatus.PARTIAL,
+                status=ScrapStatus.PARTIAL_SUCCESS,
                 scrap_html_content=page.content(),
                 error_msg=str(e),
             )
