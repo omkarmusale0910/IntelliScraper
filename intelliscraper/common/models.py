@@ -8,10 +8,13 @@ from intelliscraper.enums import BrowsingMode, ScrapStatus
 class Session(BaseModel):
     """Browser session data model."""
 
-    site: str = Field(description="The name or identifier of the target site.")
+    site: str = Field(
+        description="Identifier of the target site (e.g., 'linkedin'); used to distinguish sessions for different websites."
+    )
     base_url: str = Field(description="The base URL used for scraping or crawling.")
     cookies: list[dict] = Field(
-        description="List of cookies captured from the session."
+        default_factory=list,  # Better than empty list as default
+        description="List of cookies captured from the session.",
     )
     localStorage: dict | None = Field(
         default=None,
@@ -21,8 +24,8 @@ class Session(BaseModel):
         default=None,
         description="Key-value pairs from browser's sessionStorage, if available.",
     )
-    fingerprint: dict = Field(
-        default_factory=dict,
+    fingerprint: dict | None = Field(
+        default=None,
         description="Browser fingerprint data for session identification.",
     )
 
