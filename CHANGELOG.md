@@ -2,13 +2,13 @@
 
 All notable changes to IntelliScraper will be documented in this file.
 
-## [0.1.2] - 2025-10-18
+## 0.1.2 - 2025-10-18
 - Added per-session success and failure counters to help monitor scraping reliability and session performance.
 
-## [0.1.1] - 2025-10-17
+## 0.1.1 - 2025-10-17
 - Minor update in `README.md`: added Playwright installation instructions.
 
-## [0.1.0] - 2025-10-17
+## 0.1.0 - 2025-10-17
 
 ### Added
 - Initial release
