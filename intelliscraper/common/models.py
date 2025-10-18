@@ -2,7 +2,7 @@ from collections import Counter
 from datetime import timedelta
 from threading import Lock
 
-from pydantic import BaseModel, Field , PrivateAttr
+from pydantic import BaseModel, Field, PrivateAttr
 
 from intelliscraper.enums import BrowsingMode, ScrapStatus
 
@@ -187,6 +187,10 @@ class ScrapeResponse(BaseModel):
     )
     status: ScrapStatus = Field(
         description="Indicates the final status of the scrape, such as completed, partial, or failed."
+    )
+    elapsed_time: float | None = Field(
+        default=None,
+        description="Total time taken to complete the scrape operation, in seconds.",
     )
     scrap_html_content: str | None = Field(
         default=None,

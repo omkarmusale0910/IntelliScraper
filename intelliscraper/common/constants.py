@@ -29,3 +29,8 @@ BROWSER_LAUNCH_OPTIONS = {
     ],
     "chromium_sandbox": False,
 }
+
+MIN_SCROLL_WAIT_MS = 800
+MAX_SCROLL_WAIT_MS = 1200
+MIN_PAUSE_MS = 500
+MAX_PAUSE_MS = 1500
