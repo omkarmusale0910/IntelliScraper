@@ -151,8 +151,8 @@ wheels = [
 ]
 
 [[package]]
-name = "intelliscraper"
-version = "0.1.0"
+name = "intelliscraper-core"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "bs4" },

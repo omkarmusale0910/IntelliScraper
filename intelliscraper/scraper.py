@@ -2,7 +2,7 @@ import copy
 import json
 import logging
 import random
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from playwright.sync_api import Page
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
@@ -11,8 +11,18 @@ from playwright.sync_api import sync_playwright
 from intelliscraper.common.constants import (
     BROWSER_LAUNCH_OPTIONS,
     DEFAULT_BROWSER_FINGERPRINT,
+    MAX_PAUSE_MS,
+    MAX_SCROLL_WAIT_MS,
+    MIN_PAUSE_MS,
+    MIN_SCROLL_WAIT_MS,
 )
-from intelliscraper.common.models import Proxy, ScrapeRequest, ScrapeResponse, Session
+from intelliscraper.common.models import (
+    Proxy,
+    RequestEvent,
+    ScrapeRequest,
+    ScrapeResponse,
+    Session,
+)
 from intelliscraper.enums import BrowsingMode, ScrapStatus
 from intelliscraper.proxy.base import ProxyProvider
 
@@ -364,6 +374,81 @@ class Scraper:
         logging.debug("Reusing existing page")
         return self.pages[-1]
 
+    def _validate_url(self, url: str):
+        """Validate that the URL has a proper format."""
+        if not url or not url.startswith(("http://", "https://")):
+            raise ValueError(f"Invalid URL: {url}")
+
+    def _record_event(self, status: ScrapStatus, sent_at: float):
+        """Record a scraping event to the session statistics.
+
+        If session data is configured, this method adds a new request event to the
+        session's time-series statistics log. The event includes the timestamp and
+        the outcome status of the scraping attempt.
+
+        Use Cases:
+            The recorded event data is valuable for:
+
+            - **Rate Limiting Analysis**: Identify if too many requests are causing failures.
+            By analyzing the time-series data, you can detect patterns like:
+            - Sudden spike in failures after rapid requests
+            - Consistent failures during specific time windows
+            - Success rate degradation over time
+
+        Note:
+            If no session_data is configured for this scraper instance, this method
+            does nothing (no-op). Events are only recorded when session tracking is enabled.
+
+        Thread-safety:
+            This method is thread-safe when session_data.stats uses proper locking
+            (which it does via the internal Lock in SessionStats).
+        """
+        if self.session_data:
+            self.session_data.stats.add_request_event(
+                request_event=RequestEvent(sent_at=sent_at, request_status=status)
+            )
+
+    def _apply_human_like_behavior(self, page: Page) -> None:
+        """
+        Apply human-like scrolling behavior to avoid bot detection.
+
+        Performs a smooth scroll to a random position on the page with
+        realistic timing delays.
+
+        Args:
+            page: Playwright Page instance to apply behavior to
+
+        """
+        try:
+            # Get page height
+            page_height = page.evaluate("document.body.scrollHeight")
+
+            if page_height <= 0:
+                return
+
+            # Random scroll position (20% to 80% of page)
+            scroll_pos = int(page_height * random.uniform(0.2, 0.8))
+
+            page.evaluate(
+                f"""
+                window.scrollTo({{
+                    top: {scroll_pos},
+                    behavior: 'smooth'
+                }});
+            """
+            )
+
+            # Wait for scroll animation (INTEGER milliseconds)
+            page.wait_for_timeout(
+                random.randint(MIN_SCROLL_WAIT_MS, MAX_SCROLL_WAIT_MS)
+            )
+
+            # Additional pause (humans pause after scrolling)
+            page.wait_for_timeout(random.randint(MIN_PAUSE_MS, MAX_PAUSE_MS))
+
+        except Exception as e:
+            logging.debug(f"Human-like behavior failed: {e}")
+
     def scrape(
         self,
         url: str,
@@ -384,7 +469,7 @@ class Scraper:
 
         Returns:
             ScrapeResponse: Response object containing:
-                - status: COMPLETED, PARTIAL, or FAILED
+                - status: SUCCESS, PARTIAL_SUCCESS, or FAILED
                 - scrap_html_content: Page HTML (if successful or partial)
                 - error: Exception details (if failed or partial)
                 - scrape_request: Original request parameters
@@ -426,87 +511,80 @@ class Scraper:
             - Applies scrolling and delays in HUMAN_LIKE mode
             - For advanced behavior (mouse movements, clicks), extend this class
         """
-
-        if self._closed:
-            logging.error("Cannot scrape: Scraper is closed")
-            raise RuntimeError(
-                "Scraper is closed. Create a new instance or use context manager."
-            )
-        if self.session_data and not url.startswith(self.session_data.base_url):
-            logging.warning(
-                f"URL {url} does not match session base URL {self.session_data.base_url}. "
-                "Scraping may fail due to invalid session."
-            )
-
-        logging.info(f"Scraping: {url}")
-        scrape_request = ScrapeRequest(
-            url=url,
-            timeout=timeout,
-            browser_launch_options=self.browser_launch_options,
-            proxy=self.proxy,
-            session_data=self.session_data,
-            browsing_mode=self.browsing_mode,
-        )
-        if not isinstance(page, Page):
-            page = self._get_page()
+        # TODO: If the page is JavaScript-heavy and content loads dynamically
+        # upon user actions (like scrolling), add the required functionality.
+        sent_at = datetime.now(timezone.utc).timestamp()
         try:
+            if self._closed:
+                logging.error("Cannot scrape: Scraper is closed")
+                raise RuntimeError(
+                    "Scraper is closed. Create a new instance or use context manager."
+                )
+            if self.session_data and not url.startswith(self.session_data.base_url):
+                logging.warning(
+                    f"URL {url} does not match session base URL {self.session_data.base_url}. "
+                    "Scraping may fail due to invalid session."
+                )
+            self._validate_url(url=url)
+
+            logging.info(f"Scraping: {url}")
+            scrape_request = ScrapeRequest(
+                url=url,
+                timeout=timeout,
+                browser_launch_options=self.browser_launch_options,
+                proxy=self.proxy,
+                session_data=self.session_data,
+                browsing_mode=self.browsing_mode,
+            )
+            page_to_use = page if isinstance(page, Page) else self._get_page()
+
             logging.debug(f"Navigating to: {url}")
-            page.goto(
+
+            page_to_use.goto(
                 url=url,
                 wait_until="networkidle",
                 timeout=timeout.total_seconds() * 1000,
             )
             logging.debug(f"Page loaded successfully :{url}")
-            # Optional: Add extra waiting if needed
-            # Use wait_for_selector() if you need to wait for a specific element to appear on the page
-            # Example: page.wait_for_selector(".product-list", timeout=60000)
-            #
-            # Use wait_for_timeout() if you need to wait for a fixed amount of time
-            # Example: page.wait_for_timeout(60000)  # waits 60 seconds
-
-            # Note: This class provides basic page loading functionality.
-            # If you need human-like behavior (such as scrolling, mouse movements, or random delays),
-            # you can extend this class and add those features in your implementation.
 
             # Simple scroll to simulate human-like behavior (helps avoid bot detection)
             # Scrolling also helps trigger lazy-loaded content on pages that load data dynamically
             if self.browsing_mode == BrowsingMode.HUMAN_LIKE:
-                page.evaluate(
-                    """
-                    window.scrollTo({
-                        top: document.body.scrollHeight / 2,
-                        behavior: 'smooth'
-                    });
-                """
-                )
-                page.wait_for_timeout(random.uniform(500, 1500))
+                self._apply_human_like_behavior(page_to_use)
 
-            # Note: This class provides basic page loading with optional simple scrolling.
-            # For advanced anti-detection features, extend this class and implement:
-            # - Random scrolling patterns
-            # - Mouse movements and hovering
-            # - Variable delays between actions
-            # - Click interactions with elements
-            # These techniques help avoid bot detection on sites with advanced security.
-            logging.info(f"Successfully scraped: {url}")
+            html_content = page_to_use.content()
+            elapsed_time = datetime.now(timezone.utc).timestamp() - sent_at
+            logging.info(
+                f"Scraping finished: {url} in {elapsed_time:.2f}s with status={ScrapStatus.SUCCESS.value}"
+            )
+            self._record_event(sent_at=sent_at, status=ScrapStatus.SUCCESS)
             return ScrapeResponse(
                 scrape_request=scrape_request,
-                status=ScrapStatus.COMPLETED,
-                scrap_html_content=page.content(),
+                status=ScrapStatus.SUCCESS,
+                elapsed_time=elapsed_time,
+                scrap_html_content=html_content,
             )
         except PlaywrightTimeoutError as e:
             logging.warning(
                 f"Timeout while loading URL: {url}. "
                 f"Waited {timeout.total_seconds()} seconds. Returning partial content."
             )
+            html_content = page_to_use.content()
+            elapsed_time = datetime.now(timezone.utc).timestamp() - sent_at
+            self._record_event(sent_at=sent_at, status=ScrapStatus.PARTIAL_SUCCESS)
+            logging.info(
+                f"Scraping finished: {url} in {elapsed_time:.2f}s with status={ScrapStatus.PARTIAL_SUCCESS.value}"
+            )
             return ScrapeResponse(
                 scrape_request=scrape_request,
-                status=ScrapStatus.PARTIAL,
-                scrap_html_content=page.content(),
+                status=ScrapStatus.PARTIAL_SUCCESS,
+                elapsed_time=elapsed_time,
+                scrap_html_content=html_content,
                 error_msg=str(e),
             )
         except Exception as e:
             logging.error(f"Failed to scrape URL: {url}. Error: {e}", exc_info=True)
+            self._record_event(sent_at=sent_at, status=ScrapStatus.FAILED)
             return ScrapeResponse(
                 scrape_request=scrape_request,
                 status=ScrapStatus.FAILED,

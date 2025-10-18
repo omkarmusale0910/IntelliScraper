@@ -28,6 +28,6 @@ class BrowsingMode(str, Enum):
 class ScrapStatus(str, Enum):
     """Represents the status of a scraping operation."""
 
-    PARTIAL = "partial"
-    COMPLETED = "completed"
+    SUCCESS = "success"
+    PARTIAL_SUCCESS = "partial_success"
     FAILED = "failed"

@@ -59,6 +59,11 @@ intelliscraper-session --url "https://himalayas.app" --site "himalayas" --output
 3. ⏎ Press Enter after successful login
 4. 💾 Session data (cookies, storage, fingerprints) saved to JSON file
 
+> [!IMPORTANT]  
+> Each session internally maintains time-series statistics of scraping events including timestamps, request start times, and statuses. 
+> These metrics are useful for analyzing scraping behavior, rate limits, and identifying performance bottlenecks. 
+> During testing, we observed that increasing concurrency too aggressively can lead to failures, while controlled, slower scraping rates maintain higher success rates and better session stability.
+
 ### Authenticated Scraping with Session
 
 ```python
@@ -135,7 +140,7 @@ response = scraper.scrape("https://example.com")
 - ✅ Proxy support (Bright Data)
 - ✅ HTML parsing and Markdown conversion
 - ✅ Anti-detection features
-- 🔄 PyPI package (Coming soon)
+- ✅ PyPI package
 - 🔄 Async scraping support
 - 🔄 Web crawler
 - 🔄 AI integration
