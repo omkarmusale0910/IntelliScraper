@@ -1,8 +1,95 @@
+from collections import Counter
 from datetime import timedelta
+from threading import Lock
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field , PrivateAttr
 
 from intelliscraper.enums import BrowsingMode, ScrapStatus
+
+
+class RequestEvent(BaseModel):
+    """Represents a single scraping request event in time-series format.
+
+    Each event captures when a request was made and its outcome status,
+    enabling detailed audit trails and performance analysis.
+    """
+
+    sent_at: float = Field(description="Unix timestamp when this request was sent")
+    request_status: ScrapStatus = Field(
+        description="Outcome status of the scraping request: success, partial success, or failed"
+    )
+
+
+class SessionStats(BaseModel):
+    """
+    Thread-safe statistics collector for scraping sessions.
+
+    Maintains a time-series log of all request events and provides
+    computed statistics about success rates, failures, and performance.
+    All operations are thread-safe for use in multi-threaded scraping.
+
+    Attributes:
+        request_events: Chronological list of all scraping request events
+    """
+
+    # Configure Pydantic to allow Lock type
+    model_config = {"arbitrary_types_allowed": True}
+
+    request_events: list[RequestEvent] = Field(
+        default_factory=list,
+        description="Chronological list of all request events in this session",
+    )
+
+    # Use PrivateAttr for the lock (Pydantic v2 way)
+    _lock: Lock = PrivateAttr(default_factory=Lock)
+
+    def add_request_event(self, request_event: RequestEvent) -> None:
+        """
+        Add a new request event to the time-series log in a thread-safe manner.
+
+        Args:
+            request_event: The RequestEvent to record
+
+        Thread-safe: Yes, uses internal lock to prevent race conditions
+        """
+
+        with self._lock:
+            self.request_events.append(request_event)
+
+    @property
+    def stats(self) -> dict[str, int]:
+        """
+        Get breakdown of all request statuses.
+
+        Returns:
+            Dictionary mapping status names to their counts:
+            {
+                "success": int,
+                "partial": int,
+                "failed": int
+            }
+
+        Thread-safe: Yes
+        """
+
+        with self._lock:
+            # Use Counter for efficient counting
+            status_counts = Counter(
+                event.request_status.value for event in self.request_events
+            )
+
+            # Ensure all statuses are present (default to 0)
+            return {
+                ScrapStatus.SUCCESS.value: status_counts.get(
+                    ScrapStatus.SUCCESS.value, 0
+                ),
+                ScrapStatus.PARTIAL_SUCCESS.value: status_counts.get(
+                    ScrapStatus.PARTIAL_SUCCESS.value, 0
+                ),
+                ScrapStatus.FAILED.value: status_counts.get(
+                    ScrapStatus.FAILED.value, 0
+                ),
+            }
 
 
 class Session(BaseModel):
@@ -27,6 +114,11 @@ class Session(BaseModel):
     fingerprint: dict | None = Field(
         default=None,
         description="Browser fingerprint data for session identification.",
+    )
+    # Time-series statistics
+    stats: SessionStats = Field(
+        default_factory=SessionStats,
+        description="Time-series event log and computed statistics",
     )
 
 
