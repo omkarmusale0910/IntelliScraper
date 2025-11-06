@@ -17,11 +17,11 @@ from intelliscraper.exception import HTMLParserInputError
 from intelliscraper.html_parser import HTMLParser
 from intelliscraper.proxy.base import ProxyProvider
 from intelliscraper.proxy.brightdata import BrightDataProxy
-from intelliscraper.scraper import Scraper
+from intelliscraper.scraper import AsyncScraper
 
 __all__ = [
     # Core
-    "Scraper",
+    "AsyncScraper",
     "HTMLParser",
     # Models
     "Proxy",
