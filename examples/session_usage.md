@@ -4,7 +4,7 @@ This example demonstrates how to scrape authenticated pages using AsyncScraper w
 
 ## Files
 
-- `example_simple.py` - Main script with scraping code
+- `scraping_with_session.py` - Main script with scraping code
 - `example_session.json` - Sample session file (replace with your actual session)
 
 ## Quick Start
@@ -16,7 +16,7 @@ Instead of manually copying cookies, you can automatically generate session data
 Run the following command:
 
 ```bash
-uv run intelliscraper/scripts/get_session_data.py --url "https://www.example.com/" --site "example" --output "./example_session.json"
+intelliscraper-session --url "https://www.example.com/" --site "example" --output "./example_session.json"
 ```
 
 What This Does
@@ -56,11 +56,6 @@ headless=False  # Show browser window (useful for debugging)
 ```python
 max_concurrent_pages=4  # Scrape 4 URLs at the same time
 max_concurrent_pages=8  # Scrape 8 URLs at the same time
-```
-
-### Timeout
-```python
-result = await scraper.scrape(url, timeout=timedelta(seconds=60))
 ```
 
 ## Troubleshooting

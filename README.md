@@ -51,7 +51,7 @@ async def main():
     async with AsyncScraper() as scraper:
         response = await scraper.scrape("https://example.com")
 
-        if response.status == ScrapStatus.COMPLETED:
+        if response.status == ScrapStatus.SUCCESS:
             print(response.scrap_html_content)
 
 if __name__ == "__main__":
@@ -96,10 +96,10 @@ async def main():
 
     async with AsyncScraper(session_data=session) as scraper:
         response = await scraper.scrape(
-            "https://example.app/jobs/python?experience=entry-level%2Cmid-level"
+            "https://example.com/jobs/python?experience=entry-level%2Cmid-level"
         )
 
-        if response.status == ScrapStatus.COMPLETED:
+        if response.status == ScrapStatus.SUCCESS:
             print("Successfully scraped authenticated page!")
             print(response.scrap_html_content)
 
@@ -119,13 +119,14 @@ async def main():
     async with AsyncScraper() as scraper:
         response = await scraper.scrape("https://example.com")
 
-        if response.status == ScrapStatus.COMPLETED:
+        if response.status == ScrapStatus.SUCCESS:
             parser = HTMLParser(
                 url=response.scrape_request.url,
                 html=response.scrap_html_content
             )
             print(parser.text)
             print(parser.links)
+            print(parser.markdown)
             print(parser.markdown_for_llm)
 
 if __name__ == "__main__":
@@ -153,7 +154,7 @@ async def main():
     async with AsyncScraper(proxy=bright_proxy) as scraper:
         response = await scraper.scrape("https://example.com")
 
-        if response.status == ScrapStatus.COMPLETED:
+        if response.status == ScrapStatus.SUCCESS:
             print("Scraped successfully through Bright Data proxy!")
 
 if __name__ == "__main__":

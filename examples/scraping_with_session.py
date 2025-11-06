@@ -46,7 +46,7 @@ async def main():
 
     #  Process results
     for i, result in enumerate(results, 1):
-        if result.status == ScrapStatus.SUCCESS:
+        if result.status in (ScrapStatus.SUCCESS, ScrapStatus.PARTIAL_SUCCESS):
             print(f"✓ URL {i}: Success ({len(result.scrap_html_content)} bytes)")
 
             # Save HTML to file

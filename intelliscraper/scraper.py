@@ -357,15 +357,6 @@ class AsyncScraper:
         logging.debug("Creating and configuring new page")
         page = await self.context.new_page()
 
-        # Only set storage on the first page to avoid redundant page loads.
-        # Note: While cookies are shared across all pages in the context,
-        # localStorage and sessionStorage are page-specific and would need
-        # to be set individually. However, since all pages will navigate to
-        # URLs on the same domain during scraping, the storage will be set
-        # automatically when they load their target URLs.
-        if self.page_pool:
-            return page
-
         # Apply session storage if available
         if self.session_data and (
             self.session_data.localStorage or self.session_data.sessionStorage
