@@ -227,7 +227,10 @@ class AsyncScraper:
                 "height": screen.get("height", 1080),
             },
             proxy=proxy,
-            geolocation={"latitude": 18.5903841, "longitude": 73.7836033},
+            geolocation={
+                "latitude": random.uniform(-90, 90),
+                "longitude": random.uniform(-180, 180),
+            },
             user_agent=browser_fingerprint.get(
                 "userAgent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
             ),
@@ -531,6 +534,14 @@ class AsyncScraper:
         # Only max_concurrent_pages tasks can enter this block at once
         async with self.semaphore:
             try:
+                scrape_request = ScrapeRequest(
+                    url=url,
+                    timeout=timeout,
+                    browser_launch_options=self.browser_launch_options,
+                    proxy=self.proxy,
+                    session_data=self.session_data,
+                    browsing_mode=self.browsing_mode,
+                )
                 if self._closed:
                     logging.error("Cannot scrape: Scraper is closed")
                     raise RuntimeError(
@@ -544,16 +555,7 @@ class AsyncScraper:
                     )
 
                 self._validate_url(url=url)
-
                 logging.info(f"Scraping: {url}")
-                scrape_request = ScrapeRequest(
-                    url=url,
-                    timeout=timeout,
-                    browser_launch_options=self.browser_launch_options,
-                    proxy=self.proxy,
-                    session_data=self.session_data,
-                    browsing_mode=self.browsing_mode,
-                )
 
                 page = self._get_available_page()
 
