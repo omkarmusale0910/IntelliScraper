@@ -2,7 +2,7 @@
 
 All notable changes to IntelliScraper will be documented in this file.
 
-# 0.1.3 - 2025-11-07
+## 0.1.3 - 2025-11-07
 - Updated Scraper from synchronous to asynchronous implementation to significantly improve concurrency, performance, and resource efficiency.
 
 ## 0.1.2 - 2025-10-18
