@@ -5,13 +5,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "intelliscraper-core"
-version = "0.1.5"
+version = "0.1.6"
 description = "Smart web scraper that abstracts away complexity - from simple sites to highly protected ones."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "bs4>=0.0.2",
-    "html-to-markdown>=1.16.0",
+    "html-to-markdown==3.3.2",
     "html5lib>=1.1",
     "playwright>=1.55.0",
     "pydantic>=2.11.10",
