@@ -2,7 +2,7 @@
 
 All notable changes to IntelliScraper will be documented in this file.
 
-## 0.1.6 - 2026-05-01
+## 0.1.7 - 2026-05-01
 
 ### Fixed
 - Fixed the issue with the `html-to-markdown` library and updated to use the latest version (3.3.2). Added support for extracting `navigable_links`.
