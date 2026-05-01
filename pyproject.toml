@@ -59,7 +59,7 @@ Changelog = "https://github.com/omkarmusale0910/IntelliScraper/blob/main/CHANGEL
 
 
 [tool.hatch.build.targets.wheel]
-packages = ["intelliscraper-core"]
+packages = ["intelliscraper"]
 
 exclude = ["/.github/", "/tests/", "/.gitignore", "**/*.pyc", "**/__pycache__/"]
 
