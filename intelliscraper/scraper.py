@@ -38,7 +38,7 @@ class AsyncScraper:
         proxy: Proxy | ProxyProvider | None = None,
         session_data: Session | None = None,
         browsing_mode: BrowsingMode | None = None,
-        max_concurrent_pages: int = 4,
+        max_concurrent_pages: int = 1,
     ):
         """Initialize the async scraper with browser and session configuration.
 
@@ -52,7 +52,7 @@ class AsyncScraper:
             browsing_mode: Behavior mode - FAST (no human simulation) or HUMAN_LIKE
                 (scrolling, delays). Auto-determined if None. Defaults to None.
             max_concurrent_pages: Number of pages to use for concurrent scraping.
-                Defaults to 4.
+                Defaults to 1
 
         Note:
             This __init__ only sets configuration. Call initialize() or use
