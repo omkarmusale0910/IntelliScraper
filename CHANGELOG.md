@@ -2,6 +2,11 @@
 
 All notable changes to IntelliScraper will be documented in this file.
 
+## 0.1.4 - 2026-05-01
+
+### Fixed
+- Fixed package build configuration that prevented importing `intelliscraper` after installation. The wheel was incorrectly configured to package a non-existent directory (`intelliscraper-core`) instead of the actual source directory (`intelliscraper`), causing `ModuleNotFoundError` on import.
+
 ## 0.1.3 - 2025-11-07
 - Updated Scraper from synchronous to asynchronous implementation to significantly improve concurrency, performance, and resource efficiency.
 
