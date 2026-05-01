@@ -2,6 +2,11 @@
 
 All notable changes to IntelliScraper will be documented in this file.
 
+## 0.1.5 - 2026-05-01
+
+### Fixed
+- Re-release of 0.1.4 fix due to PyPI version conflict. The 0.1.4 wheel was uploaded without the build fix, so 0.1.5 contains the corrected package configuration ensuring `intelliscraper` is importable after installation.
+
 ## 0.1.4 - 2026-05-01
 
 ### Fixed
