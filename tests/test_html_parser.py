@@ -1,8 +1,10 @@
+"""Tests for HTMLParser content extraction and Markdown conversion."""
+
 import os
 
 import pytest
 
-from intelliscraper.html_parser import HTMLParser
+from intelliscraper.parsers.html_parser import HTMLParser
 
 TEST_DIR = os.path.dirname(__file__)
 
