@@ -3,9 +3,16 @@
 A powerful **anti-bot detection async web scraping** library built on Playwright.  Designed for scraping protected sites job platforms, social networks, e-commerce dashboardsthat require authentication and sophisticated anti-detection.
 
 [![PyPI Version](https://img.shields.io/pypi/v/intelliscraper-core)](https://pypi.org/project/intelliscraper-core/)
+[![Documentation](https://img.shields.io/badge/docs-ReadTheDocs-blue)](https://intelliscraper.readthedocs.io/en/latest/)
 ![Python Version](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active-success)
+
+---
+
+## 📖 Documentation
+
+For detailed guides, tutorials, and full API reference, please visit our **[official documentation](https://intelliscraper.readthedocs.io/en/latest/)**.
 
 ---
 

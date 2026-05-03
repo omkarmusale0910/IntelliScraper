@@ -553,13 +553,20 @@ class AsyncScraper:
         if http_status_code is None:
             return ScrapStatus.SUCCESS
 
+        if http_status_code is None:
+            return ScrapStatus.FAILED
+
         if http_status_code == 429:
             return ScrapStatus.RATE_LIMITED
         if http_status_code == 403:
             return ScrapStatus.BLOCKED
         if 200 <= http_status_code < 400:
             return ScrapStatus.SUCCESS
-        return ScrapStatus.FAILED
+
+        if http_status_code is None:
+            return ScrapStatus.FAILED
+
+        return ScrapStatus.SUCCESS
 
     def _get_session_id(self) -> str | None:
         """Return the session site identifier, or ``None``.
