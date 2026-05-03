@@ -53,6 +53,7 @@ docs = [
 
 [project.urls]
 Homepage = "https://github.com/omkarmusale0910/IntelliScraper"
+Documentation = "https://intelliscraper.readthedocs.io/en/latest/"
 Repository = "https://github.com/omkarmusale0910/IntelliScraper"
 Issues = "https://github.com/omkarmusale0910/IntelliScraper/issues"
 Changelog = "https://github.com/omkarmusale0910/IntelliScraper/blob/main/CHANGELOG.md"
