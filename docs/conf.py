@@ -7,14 +7,14 @@ import sys
 # Add project root to path so autodoc can find the package.
 sys.path.insert(0, os.path.abspath(".."))
 
-# Project information 
+# Project information
 
 project = "IntelliScraper"
 copyright = "2025, Omkar Musale"
 author = "Omkar Musale"
 release = "0.2.0"
 
-# General configuration 
+# General configuration
 
 extensions = [
     "sphinx.ext.autodoc",
@@ -57,7 +57,7 @@ intersphinx_mapping = {
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
-# Options for HTML output 
+# Options for HTML output
 
 html_theme = "furo"
 html_title = "IntelliScraper"
