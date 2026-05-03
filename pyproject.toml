@@ -1,11 +1,10 @@
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-# This tells pip/uv HOW to build your package into a .whl file
 
 [project]
 name = "intelliscraper-core"
-version = "0.1.7"
+version = "0.2.0"
 description = "Smart web scraper that abstracts away complexity - from simple sites to highly protected ones."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -33,30 +32,30 @@ keywords = [
 ]
 
 classifiers = [
-    # Development status
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-
     "Topic :: Internet :: WWW/HTTP",
     "Topic :: Software Development :: Libraries :: Python Modules",
-
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
-
-    # Operating systems
     "Operating System :: OS Independent",
 ]
 
 [dependency-groups]
 dev = ["black>=25.9.0", "isort>=6.0.1", "pytest>=8.4.2"]
 
+[project.optional-dependencies]
+docs = [
+    "sphinx>=7.0.0",
+    "furo>=2024.1.29",
+    "myst-parser>=3.0.1",
+]
+
 [project.urls]
 Homepage = "https://github.com/omkarmusale0910/IntelliScraper"
-# Documentation = "https://intelliscraper.readthedocs.io"  # If you have docs
 Repository = "https://github.com/omkarmusale0910/IntelliScraper"
 Issues = "https://github.com/omkarmusale0910/IntelliScraper/issues"
 Changelog = "https://github.com/omkarmusale0910/IntelliScraper/blob/main/CHANGELOG.md"
-
 
 [tool.hatch.build.targets.wheel]
 packages = ["intelliscraper"]
